@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NUP-1471 经营计划调整 · 可点样稿（化名假数据）</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background:#f5f6fa; color:#1f2430; }
+  .top { position:sticky; top:0; z-index:9; background:#fff; border-bottom:1px solid #e6e8f0; padding:12px 20px; }
+  .top h1 { font-size:19px; margin:0 0 2px; }
+  .top p { margin:0; color:#8a90a3; font-size:12px; }
+  .roles { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .roles b { font-size:13px; }
+  button, select, input { font:inherit; font-size:13px; }
+  .rbtn { border:1px solid #d5d9e6; background:#fff; border-radius:8px; padding:6px 12px; cursor:pointer; min-height:36px; }
+  .rbtn.on { background:#20293d; color:#fff; border-color:#20293d; }
+  .tabs { display:flex; gap:8px; padding:14px 20px 0; flex-wrap:wrap; }
+  .tab { border:1px solid #d5d9e6; background:#fff; border-radius:10px 10px 0 0; padding:8px 16px; cursor:pointer; min-height:40px; }
+  .tab.on { background:#2f6bff; color:#fff; border-color:#2f6bff; }
+  .panel { margin:0 20px 20px; background:#fff; border:1px solid #e6e8f0; border-radius:0 12px 12px 12px; padding:16px; }
+  .filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+  .filters select, .filters input { border:1px solid #d5d9e6; border-radius:8px; padding:7px 10px; min-height:38px; background:#fff; }
+  .primary { background:#2f6bff; color:#fff; border:none; border-radius:8px; padding:8px 16px; cursor:pointer; min-height:38px; }
+  .ghost { background:#fff; border:1px solid #d5d9e6; border-radius:8px; padding:8px 14px; cursor:pointer; min-height:38px; }
+  .note { background:#fff8e6; border:1px solid #ffe1a0; color:#8a6d1a; border-radius:8px; padding:8px 12px; font-size:12px; margin-bottom:12px; }
+  .stats { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:12px; font-size:13px; color:#5b6172; }
+  .stats b { color:#1f2430; font-size:17px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:9px 8px; border-bottom:1px solid #eef0f6; vertical-align:top; }
+  th { color:#8a90a3; font-weight:600; background:#fafbfe; }
+  .tag { display:inline-block; background:#eef3ff; color:#2f6bff; border-radius:20px; padding:1px 9px; font-size:12px; }
+  .bar { height:7px; background:#eef0f6; border-radius:6px; overflow:hidden; min-width:110px; }
+  .bar i { display:block; height:100%; border-radius:6px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr)); gap:12px; }
+  .card { border:1px solid #e6e8f0; border-radius:12px; padding:12px; border-left:4px solid #2f6bff; }
+  .card h4 { margin:0 0 6px; font-size:14px; }
+  .card p { margin:3px 0; font-size:12px; color:#5b6172; }
+  .big { font-size:19px; font-weight:700; color:#2f6bff; }
+  .person { border:1px solid #e6e8f0; border-radius:12px; margin-bottom:12px; overflow:hidden; }
+  .person > .head { display:flex; justify-content:space-between; gap:10px; padding:11px 14px; cursor:pointer; background:#fafbfe; flex-wrap:wrap; }
+  .person .body { padding:4px 14px 12px; }
+  .hide { display:none !important; }
+  .toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:#20293d; color:#fff; padding:11px 18px; border-radius:10px; font-size:13px; opacity:0; pointer-events:none; transition:.2s; max-width:90vw; text-align:center; }
+  .toast.show { opacity:1; }
+  .story { margin:0 20px 22px; background:#fff; border:1px dashed #c9d2ea; border-radius:12px; padding:14px 16px; font-size:13px; line-height:1.8; }
+  .story h3 { margin:0 0 6px; font-size:14px; }
+  @media (max-width:640px){ .panel{margin:0 8px 14px; padding:10px;} .tabs,.top{padding-left:10px;padding-right:10px;} .story{margin:0 8px 16px;} }
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>经营计划 · 调整后样稿</h1>
+  <p>NUP-1471 可点演示 · 全部化名假数据 · 先选一个身份，再点下面五张卡逐个看</p>
+  <div class="roles">
+    <b>我现在是：</b>
+    <button class="rbtn on" data-role="director" onclick="setRole('director')">总监（能看别人）</button>
+    <button class="rbtn" data-role="manager" onclick="setRole('manager')">经理（看本团队老视图）</button>
+    <button class="rbtn" data-role="sales" onclick="setRole('sales')">普通销售·王小北（只看自己）</button>
+    <span id="roleTip" style="font-size:12px;color:#8a6d1a"></span>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab on" data-tab="five" onclick="setTab('five')">五年客户管线</button>
+  <button class="tab" data-tab="annual" onclick="setTab('annual')">年度目标</button>
+  <button class="tab" data-tab="quarter" onclick="setTab('quarter')">季度目标</button>
+  <button class="tab" data-tab="monthly" onclick="setTab('monthly')">月度拜访计划</button>
+  <button class="tab" data-tab="weekly" onclick="setTab('weekly')">周计划</button>
+</div>
+
+<!-- 五年管线 -->
+<section class="panel" id="panel-five">
+  <div class="note dir-only">总监专属：选部门、导出。选业务员是老功能，总监和经理都有（经理只能选本团队的人）；普通销售打开只看到自己的客户卡。</div>
+  <div class="filters">
+    <select id="fiveUser" class="mgr-up" onchange="renderFive()"></select>
+    <span class="dir-only" style="display:contents"><select id="fiveDept" onchange="renderFive()"></select></span>
+    <input id="fiveQ" placeholder="搜客户名" oninput="renderFive()">
+    <span class="dir-only" style="display:contents"><button class="primary" onclick="exportFive()">导出当前筛选</button></span>
+    <button class="ghost" onclick="clearFive()">清除筛选</button>
+  </div>
+  <div class="stats" id="fiveStats"></div>
+  <div class="cards" id="fiveCards"></div>
+</section>
+
+<!-- 年度 -->
+<section class="panel hide" id="panel-annual">
+  <div class="filters dir-only">
+    <select id="annualUser" onchange="renderGoals()"></select>
+    <select id="annualDept" onchange="renderGoals()"></select>
+    <button class="ghost" onclick="clearGoals()">清除筛选</button>
+  </div>
+  <p style="font-size:12px;color:#8a90a3;margin:0 0 8px">公司整体、团队整体目标不按部门筛，始终单列在个人目标上方（样稿为省篇幅，个人表里用首行示意）。</p>
+  <div id="annualMeta" class="note hide"></div>
+  <table><thead><tr><th>周期</th><th>所在部门</th><th>业务员姓名</th><th>客户</th><th>指标</th><th>目标值</th><th>状态</th></tr></thead><tbody id="annualBody"></tbody></table>
+</section>
+
+<!-- 季度 -->
+<section class="panel hide" id="panel-quarter">
+  <p style="font-size:13px;line-height:1.9">季度目标和年度是同一张表、同一套筛选，只是周期列显示成 2026年Q4 这样。<br>点左边「年度目标」里选人选部门的效果，季度这边完全一样，不再重复画一遍。</p>
+  <button class="primary" onclick="setTab('annual')">去年度那边试筛选</button>
+</section>
+
+<!-- 月度 -->
+<section class="panel hide" id="panel-monthly">
+  <div class="filters">
+    <select id="monPeriod" onchange="renderMonthly()">
+      <option value="2026-10">2026年10月（本月）</option>
+      <option value="2026-09">2026年9月</option>
+      <option value="2026-08">2026年8月</option>
+    </select>
+    <span class="dir-only" style="display:contents">
+      <select id="monUser" onchange="renderMonthly()"></select>
+      <select id="monDept" onchange="renderMonthly()"></select>
+    </span>
+    <button class="primary self-only hide" id="fillBtn" onclick="toast('跳去填写页：只能改自己本月的计划（样稿示意，不真跳转）')">填写/修改我的拜访计划</button>
+  </div>
+  <div class="note dir-only">你现在看的是别人的计划，只能看不能改：新建、删除、提交按钮全部不在。选部门就是把那个部门的人一个接一个往下排。</div>
+  <div id="monList"></div>
+</section>
+
+<!-- 周计划 -->
+<section class="panel hide" id="panel-weekly">
+  <div class="filters">
+    <label style="font-size:13px">选哪一周 <input type="date" id="weekDate" value="2026-10-19" onchange="renderWeekly()"></label>
+    <span id="weekLabel" class="tag"></span>
+    <span class="dir-only" style="display:contents">
+      <select id="weekUser" onchange="renderWeekly()"></select>
+      <select id="weekDept" onchange="renderWeekly()"></select>
+    </span>
+  </div>
+  <div class="note">这里是过程快照，不是奖金结算口径（沿用现页面的提醒，原样保留）。点开一个人，就能看到他这周计划里的客户和联系人。</div>
+  <div id="weekList"></div>
+</section>
+
+<div class="story">
+  <h3>照着点一遍（验收剧本）</h3>
+  第一步，保持「总监」身份，在五年管线选「北京大区一部」，客户卡应该只剩这个部门的人，每张卡能看到今年计划几次、实际去了几次；点导出，下面会提示导出多少家。<br>
+  第二步，切到年度目标，选张大川：个人目标应该只剩他一行，公司整体那行还在最上面，他的部门列写着北京大区二部；再选一次部门，公司整体行还是在。<br>
+  第三步，切到月度，月份换成 9 月，再选一个部门，下面应该按人一块一块排开，点开谁就看到谁的客户清单，全程没有能改数据的按钮。<br>
+  第四步，切到周计划，换一个日期，点开一个人，应该看到客户名称加上联系人。<br>
+  第五步，把身份切成「普通销售」：所有选别人、选部门、导出的东西应该全部消失，只能看到王小北自己的，月度多出一个填自己计划的按钮。
+</div>
+
+<div class="story" style="border-color:#f0b7b7;background:#fffafa">
+  <h3>【样稿评审辅助 · 不属于产品设计】怎么提问题</h3>
+  按上面剧本点一遍，任何觉得不对、看不懂、想改的地方都可以提。做法：点下面按钮复制「提问模板」，把空填好，发到评审群或发给发起人。模板会自动带上你现在选的身份和页面，别人照着就能复现。<br>
+  <button class="ghost" onclick="copyAsk()">复制提问模板</button>
+  <button class="ghost" onclick="copyScript()">复制五步验收清单</button>
+  <span style="font-size:12px;color:#8a90a3">提示：提问时写清「看到什么 / 期望是什么」最好使；有截图一并附上。</span>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const DEPTS = ["北京大区一部","北京大区二部","北京大区三部","北京大区四部","北京大区五部","北京大区六部","湖南大区部","湖北大区部","上海大区部","四川大区部","未定部门"];
+const PEOPLE = [
+  {id:1,name:"王小北",dept:"北京大区一部"},
+  {id:2,name:"李晓南",dept:"北京大区一部"},
+  {id:3,name:"张大川",dept:"北京大区二部"},
+  {id:4,name:"刘一舟",dept:"湖南大区部"},
+  {id:5,name:"陈小满",dept:"上海大区部"},
+  {id:6,name:"赵未定",dept:"未定部门"}
+];
+const ACC = [
+  {name:"青山能源集团（演示）",user:1,stage:"今年签约",plan:12,done:5,due:"2026年",level:"A级"},
+  {name:"临江银行分行（演示）",user:1,stage:"明年维护",plan:8,done:8,due:"2027年",level:"B级"},
+  {name:"云港物流公司（演示）",user:2,stage:"逾期未续",plan:12,done:1,due:"2025年",level:"C级"},
+  {name:"石桥制造公司（演示）",user:3,stage:"今年签约",plan:10,done:4,due:"2026年",level:"A级"},
+  {name:"湘水食品公司（演示）",user:4,stage:"预热培育",plan:3,done:2,due:"2029年",level:"C级"},
+  {name:"浦江贸易公司（演示）",user:5,stage:"明年维护",plan:6,done:6,due:"2027年",level:"B级"},
+  {name:"无名客户甲（演示）",user:6,stage:"休眠客户",plan:2,done:0,due:"待评估",level:"未分级"}
+];
+const GOALS = [
+  {per:"2026年",user:0,dept:"—",who:"公司整体",acc:"公司整体",metric:"营收",val:"¥50,000,000",st:"进行中"},
+  {per:"2026年",user:1,dept:"北京大区一部",who:"王小北",acc:"个人整体",metric:"拜访次数",val:"149 次",st:"草稿"},
+  {per:"2026年",user:2,dept:"北京大区一部",who:"李晓南",acc:"个人整体",metric:"商机金额",val:"¥3,300",st:"草稿"},
+  {per:"2026年",user:3,dept:"北京大区二部",who:"张大川",acc:"个人整体",metric:"拜访次数",val:"90 次",st:"进行中"},
+  {per:"2026年",user:4,dept:"湖南大区部",who:"刘一舟",acc:"个人整体",metric:"营收",val:"¥1,000",st:"草稿"},
+  {per:"2026年",user:5,dept:"上海大区部",who:"陈小满",acc:"个人整体",metric:"拜访次数",val:"108 次",st:"已锁定"}
+];
+const MONTHLY = {
+  "2026-10":[{user:1,items:[["青山能源集团（演示）","周主任",8,3],["临江银行分行（演示）","吴经理",4,4]]},
+             {user:2,items:[["云港物流公司（演示）","郑总",6,1]]},
+             {user:3,items:[["石桥制造公司（演示）","高厂长",5,2]]},
+             {user:5,items:[["浦江贸易公司（演示）","林主管",4,4]]}],
+  "2026-09":[{user:1,items:[["青山能源集团（演示）","周主任",8,7]]},
+             {user:4,items:[["湘水食品公司（演示）","罗经理",3,3]]}],
+  "2026-08":[{user:2,items:[["云港物流公司（演示）","郑总",6,6]]}]
+};
+const WEEKLY = [
+  {user:1,need:5,done:2,items:[["青山能源集团（演示）","周主任","本周三上门谈续约"],["临江银行分行（演示）","吴经理","送季度对账单"]]},
+  {user:2,need:5,done:0,items:[["云港物流公司（演示）","郑总","逾期未续，先电话约时间"]]},
+  {user:3,need:4,done:3,items:[["石桥制造公司（演示）","高厂长","看新产线进度"]]}
+];
+let ROLE = "director";
+const $ = id => document.getElementById(id);
+const person = id => PEOPLE.find(p=>p.id===id) || {name:"?",dept:"?"};
+function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("show"); setTimeout(()=>el.classList.remove("show"),2600); }
+function fillSelect(id, opts, first){ const el=$(id); el.innerHTML = '<option value="">'+first+'</option>' + opts.map(o=>'<option value="'+o.v+'">'+o.t+'</option>').join(""); }
+function initFilters(){
+  const users = PEOPLE.map(p=>({v:p.id,t:p.name+"（"+p.dept+"）"}));
+  const depts = DEPTS.map(d=>({v:d,t:d}));
+  /* fiveUser 在 setRole 里按可见集填 */ fillSelect("fiveDept",depts,"全部区域");
+  fillSelect("annualUser",users,"全部业务员"); fillSelect("annualDept",depts,"全部区域");
+  fillSelect("monUser",users,"选业务员看他的"); fillSelect("monDept",depts,"或选区域看全部人");
+  fillSelect("weekUser",users,"全部业务员"); fillSelect("weekDept",depts,"全部区域");
+}
+function setRole(r){
+  ROLE=r;
+  /* 既有业务员下拉按可见集重填，切角色后失效的选中值自动清掉 */
+  const vis = visiblePeople().map(p=>({v:p.id,t:p.name+"（"+p.dept+"）"}));
+  const keep = $("fiveUser").value;
+  fillSelect("fiveUser", vis, "全部业务员");
+  $("fiveUser").value = vis.some(o=>String(o.v)===keep) ? keep : "";
+  document.querySelectorAll(".rbtn").forEach(b=>b.classList.toggle("on",b.dataset.role===r));
+  const isDir = r==="director";
+  document.querySelectorAll(".dir-only").forEach(el=>el.classList.toggle("hide",!isDir));
+  document.querySelectorAll(".mgr-up").forEach(el=>el.classList.toggle("hide",r==="sales"));
+  $("fillBtn").classList.toggle("hide", r!=="sales");
+  $("roleTip").textContent = isDir ? "跨人筛选、区域、导出都在" : (r==="manager" ? "新筛选不出现，周计划仍可看本团队（老功能）" : "选别人、区域、导出全部消失");
+  renderAll();
+}
+function setTab(t){
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
+  ["five","annual","quarter","monthly","weekly"].forEach(k=>$("panel-"+k).classList.toggle("hide",k!==t));
+}
+function visiblePeople(){
+  if(ROLE==="sales") return PEOPLE.filter(p=>p.id===1);
+  if(ROLE==="manager") return PEOPLE.filter(p=>p.dept==="北京大区一部"); /* 样稿设定：这位经理带北京大区一部 */
+  return PEOPLE;
+}
+function renderFive(){
+  const u=$("fiveUser").value, d=$("fiveDept")?$("fiveDept").value:"", q=($("fiveQ").value||"").trim();
+  let rows = ACC.filter(a=> visiblePeople().some(p=>p.id===a.user));
+  if(ROLE!=="sales" && u) rows=rows.filter(a=>a.user===+u); /* 既有业务员筛选：总监全量、经理限本团队（已由可见集收口） */
+  if(ROLE==="director" && d) rows=rows.filter(a=>person(a.user).dept===d);
+  if(q) rows=rows.filter(a=>a.name.includes(q));
+  $("fiveStats").innerHTML = "<span>现在看到 <b>"+rows.length+"</b> 家客户</span><span>今年计划合计 <b>"+rows.reduce((s,a)=>s+a.plan,0)+"</b> 次</span><span>实际完成合计 <b>"+rows.reduce((s,a)=>s+a.done,0)+"</b> 次</span>";
+  $("fiveCards").innerHTML = rows.length ? rows.map(a=>{
+    const p=person(a.user);
+    return '<div class="card"><h4>'+a.name+' <span class="tag">'+a.level+'</span></h4>'+
+      '<p>业务员：'+p.name+' · '+p.dept+'</p><p>阶段：'+a.stage+' · 下次到期：'+a.due+'</p>'+
+      '<p>今年计划拜访 <span class="big">'+a.plan+'</span> 次 · 该业务员今年完成 <span class="big" style="color:#e8890c">'+a.done+'</span> 次</p></div>';
+  }).join("") : '<p style="color:#8a90a3">这个筛选下没有客户。点「清除筛选」看全部。</p>';
+  window._fiveCount = rows.length;
+}
+function exportFive(){ toast("已按当前筛选导出 "+(window._fiveCount||0)+" 家客户（含全部管线字段，样稿不真下载）"); }
+function clearFive(){ $("fiveUser").value=""; $("fiveDept").value=""; $("fiveQ").value=""; renderFive(); }
+function renderGoals(){
+  const u=$("annualUser").value, d=$("annualDept").value;
+  let rows = GOALS.slice(); let cut=0;
+  if(ROLE==="sales") rows=rows.filter(g=>g.user===0||g.user===1);
+  if(ROLE==="manager") rows=rows.filter(g=>g.user===0||visiblePeople().some(p=>p.id===g.user));
+  if(ROLE==="director"){
+    if(u) rows=rows.filter(g=>g.user===0||g.user===+u);
+    if(d){ const before=rows.length; rows=rows.filter(g=>g.user===0||g.dept===d); cut=before-rows.length; }
+  }
+  const meta=$("annualMeta");
+  if(d && ROLE==="director"){ meta.classList.remove("hide"); meta.textContent="按部门筛掉了 "+cut+" 行个人目标；公司整体行不按部门筛，一直保留。"; }
+  else meta.classList.add("hide");
+  $("annualBody").innerHTML = rows.map(g=>"<tr><td>"+g.per+"</td><td>"+g.dept+"</td><td>"+g.who+"</td><td>"+g.acc+"</td><td>"+g.metric+"</td><td>"+g.val+"</td><td>"+g.st+"</td></tr>").join("");
+}
+function clearGoals(){ $("annualUser").value=""; $("annualDept").value=""; renderGoals(); }
+function barHtml(done,total){
+  const pct = total? Math.round(done/total*100):0;
+  const c = pct>=80? "#16a34a" : (pct>=40? "#f59e0b" : "#ef4444");
+  return '<div class="bar"><i style="width:'+Math.min(pct,100)+'%;background:'+c+'"></i></div><span style="font-size:12px;color:#5b6172">'+done+' / '+total+' 次（'+pct+'%）</span>';
+}
+function renderMonthly(){
+  const period=$("monPeriod").value;
+  let blocks=(MONTHLY[period]||[]).slice();
+  if(ROLE==="sales"){ blocks=blocks.filter(b=>b.user===1); }
+  else if(ROLE==="manager"){ blocks=blocks.filter(b=>visiblePeople().some(p=>p.id===b.user)); }
+  else if(ROLE==="director"){
+    const u=$("monUser").value, d=$("monDept").value;
+    if(u) blocks=blocks.filter(b=>b.user===+u);
+    if(d) blocks=blocks.filter(b=>person(b.user).dept===d);
+  }
+  if(!blocks.length){ $("monList").innerHTML='<p style="color:#8a90a3">这个月份、这个筛选下还没有计划。换个月份或清掉筛选再看。</p>'; return; }
+  $("monList").innerHTML = blocks.map((b,i)=>{
+    const p=person(b.user);
+    const tp=b.items.reduce((s,x)=>s+x[2],0), td=b.items.reduce((s,x)=>s+x[3],0);
+    const rows=b.items.map(x=>"<tr><td>"+x[0]+"</td><td>"+x[1]+"</td><td>"+barHtml(x[3],x[2])+"</td></tr>").join("");
+    return '<div class="person"><div class="head" onclick="this.nextElementSibling.classList.toggle(\'hide\')">'+
+      '<span><b>'+p.name+'</b> <span class="tag">'+p.dept+'</span> · '+period+' · 覆盖 '+b.items.length+' 个客户</span><span>'+td+' / '+tp+' 次 ▾</span></div>'+
+      '<div class="body'+(i>0?" hide":"")+'"><table><thead><tr><th>客户名称</th><th>联系人</th><th>已完成 / 计划</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+  }).join("");
+}
+function renderWeekly(){
+  const v=$("weekDate").value;
+  let label="本周";
+  if(v){ const d=new Date(v+"T00:00:00"); const mon=new Date(d); mon.setDate(d.getDate()-((d.getDay()+6)%7));
+    const sun=new Date(mon); sun.setDate(mon.getDate()+6);
+    const f=x=>(x.getMonth()+1)+"月"+x.getDate()+"日"; label="这一周："+f(mon)+" 至 "+f(sun); }
+  $("weekLabel").textContent=label;
+  let blocks=WEEKLY.slice();
+  if(ROLE==="sales") blocks=blocks.filter(b=>b.user===1);
+  else if(ROLE==="manager") blocks=blocks.filter(b=>visiblePeople().some(p=>p.id===b.user)); /* 既有 team 视图 */
+  else if(ROLE==="director"){
+    const u=$("weekUser").value, d=$("weekDept").value;
+    if(u) blocks=blocks.filter(b=>b.user===+u);
+    if(d) blocks=blocks.filter(b=>person(b.user).dept===d);
+  }
+  if(!blocks.length){ $("weekList").innerHTML='<p style="color:#8a90a3">这一周、这个筛选下没有计划。换一周或清掉筛选再看。</p>'; return; }
+  $("weekList").innerHTML = blocks.map((b,i)=>{
+    const p=person(b.user);
+    const rows=b.items.map(x=>"<tr><td>"+x[0]+"</td><td>"+x[1]+"</td><td>"+x[2]+"</td></tr>").join("");
+    return '<div class="person"><div class="head" onclick="this.nextElementSibling.classList.toggle(\'hide\')">'+
+      '<span><b>'+p.name+'</b> <span class="tag">'+p.dept+'</span></span><span>拜访 '+b.done+' / '+b.need+' ▾</span></div>'+
+      '<div class="body'+(i>0?" hide":"")+'"><table><thead><tr><th>客户名称</th><th>联系人</th><th>这周要办的事</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+  }).join("");
+}
+function copyText(t,msg){
+  const done=()=>toast(msg||"已复制，去粘贴发出即可");
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done)); }
+  else fallbackCopy(t,done);
+}
+function fallbackCopy(t,cb){
+  const ta=document.createElement("textarea"); ta.value=t; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); cb&&cb(); }catch(e){ toast("复制失败，请手动选中文字复制"); }
+  document.body.removeChild(ta);
+}
+function currentTabName(){ const on=document.querySelector(".tab.on"); return on?on.textContent:"—"; }
+function copyAsk(){
+  const roleMap={director:"总监",manager:"经理",sales:"普通销售·王小北"};
+  const t="【NUP-1471 样稿提问】\n身份："+roleMap[ROLE]+"\n页面："+currentTabName()+"\n走到哪一步：（例：五步剧本第三步，或自由描述）\n看到什么：\n期望是什么：\n（可选）截图说明：";
+  copyText(t,"提问模板已复制，填好后发到评审群或发给发起人");
+}
+function copyScript(){
+  const t="【NUP-1471 样稿 · 五步验收清单】\n链接：（把本页地址贴上）\n1. 总监身份→五年管线选「北京大区一部」：只剩该部客户卡，每卡有今年计划/实际次数；点导出提示家数。\n2. 年度目标选张大川：只剩他一行，公司整体行仍在最上面，部门=北京大区二部。\n3. 月度切2026年9月，再选部门：按人分块，点开见客户清单，全程无改数据的按钮。\n4. 周计划换一个日期，点开一个人：应看到客户名称+联系人。\n5. 身份切「普通销售」：选别人/选部门/导出全部消失，只剩王小北自己的，月度多出填写自己计划的按钮。\n\n有问题按「提问模板」发到评审群或发给发起人。";
+  copyText(t,"五步验收清单已复制，可连同链接一起发给大家");
+}
+function renderAll(){ renderFive(); renderGoals(); renderMonthly(); renderWeekly(); }
+initFilters(); setRole("director");
+</script>
+</body>
+</html>
+
